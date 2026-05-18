@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dice Roll Statistics Tracker</title>
+  <meta name="description" content="Track dice rolls, statistics, and distributions with a clean offline-friendly app." />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header card">
+      <div>
+        <h1>Dice Roll Statistics Tracker</h1>
+        <p id="session-status" class="muted">Ready to record rolls.</p>
+      </div>
+      <button id="reset-btn" class="secondary-btn" type="button" aria-label="Reset session">Reset</button>
+    </header>
+
+    <main class="app-grid">
+      <section class="card toolbar" aria-labelledby="controls-heading">
+        <div class="section-heading-row">
+          <h2 id="controls-heading">Controls</h2>
+        </div>
+
+        <div class="control-grid">
+          <div class="control-group">
+            <span class="control-label">Mode</span>
+            <div class="segmented" role="group" aria-label="Roll mode">
+              <button id="mode-single" type="button" class="segmented-btn" aria-pressed="true">Single</button>
+              <button id="mode-multi" type="button" class="segmented-btn" aria-pressed="false">Multi</button>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label class="control-label" for="die-type">Die type</label>
+            <select id="die-type" class="control-select" aria-label="Die type">
+              <option value="4">D4</option>
+              <option value="6" selected>D6</option>
+              <option value="8">D8</option>
+              <option value="10">D10</option>
+              <option value="12">D12</option>
+              <option value="20">D20</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+
+          <div class="control-group hidden" id="custom-sides-wrap">
+            <label class="control-label" for="custom-sides">Custom sides</label>
+            <input id="custom-sides" class="control-input" type="number" min="2" step="1" inputmode="numeric" value="6" />
+          </div>
+
+          <div class="control-group multi-only hidden" id="dice-count-wrap">
+            <label class="control-label" for="dice-count">Dice count</label>
+            <select id="dice-count" class="control-select" aria-label="Dice count"></select>
+          </div>
+
+          <div class="control-group multi-only hidden" id="tracking-mode-wrap">
+            <span class="control-label">Tracking</span>
+            <div class="segmented" role="group" aria-label="Tracking mode">
+              <button id="tracking-individual" type="button" class="segmented-btn" aria-pressed="true">Individual</button>
+              <button id="tracking-sum" type="button" class="segmented-btn" aria-pressed="false">Sum</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-panel" aria-live="polite">
+          <p id="multi-status" class="muted">Single mode: tap a face to record.</p>
+        </div>
+      </section>
+
+      <section class="card dice-card" aria-labelledby="dice-heading">
+        <div class="section-heading-row">
+          <h2 id="dice-heading">Roll input</h2>
+          <span class="hint">Tap a face</span>
+        </div>
+        <div id="dice-grid" class="dice-grid" role="group" aria-label="Dice faces"></div>
+        <p id="dice-error" class="error-text hidden" role="alert"></p>
+      </section>
+
+      <section class="card stats-card" aria-labelledby="stats-heading">
+        <div class="section-heading-row">
+          <h2 id="stats-heading">Statistics</h2>
+        </div>
+        <div id="stats-grid" class="stats-grid"></div>
+      </section>
+
+      <section class="card chart-card" aria-labelledby="chart-heading">
+        <div class="section-heading-row">
+          <h2 id="chart-heading">Distribution</h2>
+          <span id="chart-subtitle" class="hint">Frequency chart</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="distribution-chart" aria-label="Distribution chart" role="img"></canvas>
+          <div id="chart-empty" class="chart-empty">No rolls yet.</div>
+        </div>
+      </section>
+
+      <section class="card log-card" aria-labelledby="log-heading">
+        <div class="section-heading-row">
+          <h2 id="log-heading">Recent rolls</h2>
+          <span class="hint">Last 20</span>
+        </div>
+        <ul id="recent-rolls" class="recent-rolls" aria-live="polite"></ul>
+      </section>
+    </main>
+
+    <div id="live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  </div>
+</body>
+</html>
