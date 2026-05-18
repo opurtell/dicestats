@@ -15,6 +15,7 @@
     settings: { ...DEFAULT_SETTINGS },
     rolls: [],
     pendingValues: [],
+    lastRollValues: [],
     chart: null,
     suppressResetConfirm: false,
   };
@@ -430,6 +431,7 @@
   function resetSession() {
     state.rolls = [];
     state.pendingValues = [];
+    state.lastRollValues = [];
     state.settings = { ...DEFAULT_SETTINGS };
     saveSession();
     renderAll();
@@ -447,7 +449,7 @@
       }
       state.rolls = [];
     }
-    if (schemaChanged) state.pendingValues = [];
+    if (schemaChanged) { state.pendingValues = []; state.lastRollValues = []; }
     state.settings = { ...nextSettings };
     saveSession();
     renderAll();
@@ -471,16 +473,18 @@
   function recordRoll(roll) {
     state.rolls.push(roll);
     state.pendingValues = [];
+    state.lastRollValues = roll.mode === 'single' ? [roll.value] : [...(roll.values || [])];
     saveSession();
     renderAll();
-    const summary = buildRollSummary(roll);
-    flashButton(roll.mode === 'single' ? roll.value : roll.values[roll.values.length - 1]);
-    announce(`Recorded ${rollTitle(roll)}: ${summary}.`);
+    announce(`Recorded ${rollTitle(roll)}: ${buildRollSummary(roll)}.`);
   }
 
   function handleFaceTap(value) {
     const sides = currentSides();
     if (!Number.isFinite(value) || value < 1 || value > sides) return;
+
+    // Clear last-roll highlight on first tap of a new roll
+    state.lastRollValues = [];
 
     if (state.settings.mode === 'single') {
       recordRoll({
@@ -529,6 +533,12 @@
       btn.dataset.value = String(value);
       btn.setAttribute('aria-label', `Record face ${value}`);
       if (state.pendingValues.includes(value)) btn.classList.add('selected');
+      if (state.lastRollValues.includes(value)) {
+        // Count how many times value appears up to this index in lastRollValues
+        const usedCount = state.lastRollValues.slice(0, state.lastRollValues.indexOf(value) + 1).filter(v => v === value).length;
+        const prevCount = Array.from(dom.diceGrid.children).filter(b => b !== btn && b.classList.contains('last-roll') && Number(b.dataset.value) === value).length;
+        if (prevCount < usedCount) btn.classList.add('last-roll');
+      }
       btn.appendChild(makeDiceFaceContent(value, sides));
       dom.diceGrid.appendChild(btn);
     }
