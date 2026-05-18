@@ -657,6 +657,37 @@
     return { labels, data, total: values.length, info };
   }
 
+  function expectedSumDistribution(diceCount, dieSides) {
+    const count = clampInt(diceCount, 1, 1000000);
+    const sides = clampInt(dieSides, 2, 1000000);
+    if (count < 1 || sides < 2) return new Map();
+
+    // probDist[sum] = probability of making `sum` with the current number of dice.
+    let probDist = new Array(sides + 1).fill(0);
+    for (let face = 1; face <= sides; face += 1) probDist[face] = 1 / sides;
+
+    for (let dice = 2; dice <= count; dice += 1) {
+      const next = new Array(dice * sides + 1).fill(0);
+      const minSum = dice;
+      const maxSum = (dice - 1) * sides + sides;
+      for (let sum = minSum; sum <= maxSum; sum += 1) {
+        let probability = 0;
+        for (let face = 1; face <= sides; face += 1) {
+          const prev = sum - face;
+          if (prev >= 0 && prev < probDist.length) probability += probDist[prev] / sides;
+        }
+        next[sum] = probability;
+      }
+      probDist = next;
+    }
+
+    const probabilities = new Map();
+    for (let sum = count; sum <= count * sides; sum += 1) {
+      probabilities.set(sum, probDist[sum]);
+    }
+    return probabilities;
+  }
+
   function ensureChart() {
     if (!window.Chart) return null;
     if (state.chart) return state.chart;
@@ -746,9 +777,19 @@
     chart.data.labels = labels;
     chart.data.datasets[0].data = data;
     chart.data.datasets[0].label = info.chartLabel;
-    // Expected frequency line: flat line at total / numberOfBuckets
-    const expectedPerFace = total / labels.length;
-    chart.data.datasets[1].data = labels.map(() => expectedPerFace);
+    if (state.settings.mode === 'multi' && state.settings.trackingMode === 'sum') {
+      const distribution = expectedSumDistribution(state.settings.diceCount, currentSides());
+      chart.data.datasets[1].label = 'Expected (fair dice)';
+      chart.data.datasets[1].data = labels.map((label) => {
+        const sum = Number.parseInt(label, 10);
+        return total * (distribution.get(sum) || 0);
+      });
+    } else {
+      // Expected frequency line: flat line at total / numberOfBuckets
+      const expectedPerFace = total / labels.length;
+      chart.data.datasets[1].label = 'Expected (fair die)';
+      chart.data.datasets[1].data = labels.map(() => expectedPerFace);
+    }
     chart.$totalObservations = total;
     chart.update();
   }
