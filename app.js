@@ -818,6 +818,34 @@
       const ok = window.confirm('Reset this session and clear saved rolls?');
       if (ok) resetSession();
     });
+
+    // Stats help modal
+    dom.statsHelpBtn = $('stats-help-btn');
+    dom.statsHelpModal = $('stats-help-modal');
+    dom.statsHelpClose = $('stats-help-close');
+
+    dom.statsHelpBtn.addEventListener('click', () => {
+      dom.statsHelpModal.classList.remove('hidden');
+      dom.statsHelpClose.focus();
+    });
+
+    dom.statsHelpClose.addEventListener('click', () => {
+      dom.statsHelpModal.classList.add('hidden');
+      dom.statsHelpBtn.focus();
+    });
+
+    dom.statsHelpModal.addEventListener('click', (e) => {
+      if (e.target === dom.statsHelpModal) {
+        dom.statsHelpModal.classList.add('hidden');
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !dom.statsHelpModal.classList.contains('hidden')) {
+        dom.statsHelpModal.classList.add('hidden');
+        dom.statsHelpBtn.focus();
+      }
+    });
   }
 
   function validateLoadedState() {
