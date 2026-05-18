@@ -9,6 +9,7 @@
     diceCount: 2,
     trackingMode: 'individual',
     customSides: 6,
+    trackDoubles: false,
   });
 
   const state = {
@@ -375,6 +376,7 @@
     dom.diceCount.value = String(settings.diceCount);
     dom.trackingIndividual.setAttribute('aria-pressed', String(settings.trackingMode === 'individual'));
     dom.trackingSum.setAttribute('aria-pressed', String(settings.trackingMode === 'sum'));
+    dom.trackDoublesToggle.setAttribute('aria-checked', String(!!settings.trackDoubles));
 
     dom.multiOnly.forEach((el) => el.classList.toggle('hidden', settings.mode !== 'multi'));
     dom.customSidesWrap.classList.toggle('hidden', dom.dieType.value !== 'custom');
@@ -410,10 +412,12 @@
         diceCount: clampInt(settings.diceCount ?? 2, 2, 10),
         trackingMode: settings.trackingMode === 'sum' ? 'sum' : 'individual',
         customSides: clampInt(settings.customSides ?? 6, 2, 1000000),
+        trackDoubles: !!settings.trackDoubles,
       };
       if (loadedSettings.dieType === 'custom') loadedSettings.dieSides = loadedSettings.customSides;
       state.settings = loadedSettings;
       state.rolls = Array.isArray(parsed.rolls) ? parsed.rolls.filter(Boolean) : [];
+      state.doublesCount = Number.isFinite(parsed.doublesCount) ? parsed.doublesCount : 0;
     } catch {
       // Ignore corrupt storage and start fresh.
     }
@@ -424,6 +428,7 @@
       version: VERSION,
       settings: deepClone(state.settings),
       rolls: deepClone(state.rolls),
+      doublesCount: state.doublesCount || 0,
     };
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   }
@@ -432,6 +437,7 @@
     state.rolls = [];
     state.pendingValues = [];
     state.lastRollValues = [];
+    state.doublesCount = 0;
     state.settings = { ...DEFAULT_SETTINGS };
     saveSession();
     renderAll();
@@ -474,6 +480,21 @@
     state.rolls.push(roll);
     state.pendingValues = [];
     state.lastRollValues = roll.mode === 'single' ? [roll.value] : [...(roll.values || [])];
+
+    // Track doubles for multi-die mode
+    if (roll.mode === 'multi' && roll.values && roll.values.length >= 2) {
+      const valueCounts = new Map();
+      for (const v of roll.values) {
+        valueCounts.set(v, (valueCounts.get(v) || 0) + 1);
+      }
+      for (const count of valueCounts.values()) {
+        if (count >= 2) {
+          state.doublesCount = (state.doublesCount || 0) + 1;
+          break;
+        }
+      }
+    }
+
     saveSession();
     renderAll();
     announce(`Recorded ${rollTitle(roll)}: ${buildRollSummary(roll)}.`);
@@ -638,6 +659,16 @@
       const comboLeast = topEntries(comboFreq, 'asc');
       cards.push(statCard('Most common combo', comboMost.length ? `${comboMost.join(', ')} (${comboFreq.get(comboMost[0])})` : '—', 'Sorted combo key'));
       cards.push(statCard('Least common combo', comboLeast.length ? `${comboLeast.join(', ')} (${comboFreq.get(comboLeast[0])})` : '—', 'Sorted combo key'));
+    }
+
+    // Doubles tracking stat (only shown when toggled on in multi-die mode)
+    if (state.settings.mode === 'multi' && state.settings.trackDoubles) {
+      const doublesCount = state.doublesCount || 0;
+      const multiRolls = state.rolls.filter(r => r.mode === 'multi').length;
+      const doublesPct = multiRolls > 0 ? ((doublesCount / multiRolls) * 100).toFixed(1) : '—';
+      const doublesCard = statCard('Doubles', String(doublesCount), multiRolls > 0 ? `${doublesPct}% of ${multiRolls} multi-die rolls` : 'No multi-die rolls yet');
+      doublesCard.classList.add('doubles-stat');
+      cards.push(doublesCard);
     }
 
     dom.statsGrid.innerHTML = '';
@@ -895,6 +926,15 @@
       attemptSettingsUpdate(next);
     });
 
+    dom.trackDoublesToggle.addEventListener('click', () => {
+      const next = normalizeSettingsFromForm();
+      next.trackDoubles = !state.settings.trackDoubles;
+      state.settings.trackDoubles = next.trackDoubles;
+      dom.trackDoublesToggle.setAttribute('aria-checked', String(next.trackDoubles));
+      saveSession();
+      renderStats();
+    });
+
     dom.diceGrid.addEventListener('click', (event) => {
       const button = event.target.closest('button[data-value]');
       if (!button) return;
@@ -964,7 +1004,9 @@
     dom.trackingModeWrap = $('tracking-mode-wrap');
     dom.trackingIndividual = $('tracking-individual');
     dom.trackingSum = $('tracking-sum');
-    dom.multiOnly = [dom.diceCountWrap, dom.trackingModeWrap];
+    dom.doublesToggleWrap = $('doubles-toggle-wrap');
+    dom.trackDoublesToggle = $('track-doubles-toggle');
+    dom.multiOnly = [dom.diceCountWrap, dom.trackingModeWrap, dom.doublesToggleWrap];
     dom.multiStatus = $('multi-status');
     dom.diceGrid = $('dice-grid');
     dom.diceError = $('dice-error');
