@@ -12,22 +12,9 @@
 <body>
   <div class="app-shell">
     <header class="app-header card">
-      <div class="header-left">
-        <div class="app-logo" aria-hidden="true">
-          <svg viewBox="0 0 100 100" width="48" height="48" xmlns="http://www.w3.org/2000/svg">
-            <rect x="4" y="4" width="92" height="92" rx="18" fill="#18202b" stroke="rgba(41,199,199,0.5)" stroke-width="3"/>
-            <circle cx="30" cy="30" r="8" fill="#e5eef8"/>
-            <circle cx="70" cy="30" r="8" fill="#e5eef8"/>
-            <circle cx="30" cy="52" r="8" fill="#e5eef8"/>
-            <circle cx="70" cy="52" r="8" fill="#e5eef8"/>
-            <circle cx="30" cy="74" r="8" fill="#e5eef8"/>
-            <circle cx="70" cy="74" r="8" fill="#e5eef8"/>
-          </svg>
-        </div>
-        <div>
-          <h1>Dice Roll Statistics Tracker</h1>
-          <p id="session-status" class="muted">Ready to record rolls.</p>
-        </div>
+      <div>
+        <h1>Dice Roll Statistics Tracker</h1>
+        <p id="session-status" class="muted">Ready to record rolls.</p>
       </div>
       <button id="reset-btn" class="secondary-btn" type="button" aria-label="Reset session">Reset</button>
     </header>
@@ -76,13 +63,6 @@
               <button id="tracking-individual" type="button" class="segmented-btn" aria-pressed="true">Individual</button>
               <button id="tracking-sum" type="button" class="segmented-btn" aria-pressed="false">Sum</button>
             </div>
-          </div>
-
-          <div class="control-group multi-only hidden" id="doubles-toggle-wrap">
-            <label class="control-label toggle-label" for="track-doubles-toggle">Track doubles</label>
-            <button id="track-doubles-toggle" class="toggle-switch" type="button" role="switch" aria-checked="false" aria-label="Track doubles">
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </button>
           </div>
         </div>
 
