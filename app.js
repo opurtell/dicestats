@@ -582,6 +582,26 @@
     return card;
   }
 
+  function computeFairnessScore(chiResult, totalObservations, domainSize) {
+    if (!totalObservations || !domainSize || chiResult.statistic === null) return null;
+    if (totalObservations < 2) return 100;
+    // Normalise: worst-case chi² is roughly totalObs * (1 - 1/domainSize)
+    // Scale so that chi² ≈ df (expected for fair) → ~100%, and it decays smoothly
+    const df = domainSize - 1;
+    const worstCase = totalObservations * (1 - 1 / domainSize);
+    const score = Math.max(0, Math.min(100, 100 * (1 - chiResult.statistic / worstCase)));
+    return Math.round(score);
+  }
+
+  function fairnessLabel(score) {
+    if (score === null) return '';
+    if (score >= 90) return 'Excellent — very uniform';
+    if (score >= 75) return 'Good — fairly uniform';
+    if (score >= 50) return 'Fair — some deviation';
+    if (score >= 25) return 'Poor — clearly biased';
+    return 'Very poor — heavily skewed';
+  }
+
   function renderStats() {
     const info = activeObservationInfo();
     const values = info.values;
@@ -595,12 +615,15 @@
     const medianValue = median(values);
     const stdDev = populationStdDev(values);
     const chi = computeChiSquare(values, info.domainMin, info.domainMax);
+    const domainSize = info.domainMax - info.domainMin + 1;
+    const fairness = computeFairnessScore(chi, totalObservations, domainSize);
 
     const mostText = most.length ? `${most.map(rollToLabel).join(', ')} (${freq.get(most[0])})` : '—';
     const leastText = least.length ? `${least.map(rollToLabel).join(', ')} (${freq.get(least[0])})` : '—';
 
     const cards = [
       statCard('Total rolls', values.length ? String(totalRolls) : '—', values.length ? `${totalObservations} ${info.totalLabel}` : 'No rolls yet'),
+      statCard('Fairness', fairness !== null ? `${fairness}%` : '—', fairness !== null ? fairnessLabel(fairness) : 'No rolls yet'),
       statCard('Most common', mostText, values.length ? `Across ${info.label}` : 'No rolls yet'),
       statCard('Least common', leastText, values.length ? `Across ${info.label}` : 'No rolls yet'),
       statCard('Mean', values.length ? formatPrecise(meanValue) : '—', values.length ? `Population mean` : 'No rolls yet'),
@@ -642,29 +665,54 @@
       type: 'bar',
       data: {
         labels: [],
-        datasets: [{
-          label: 'Frequency',
-          data: [],
-          borderWidth: 1,
-          borderColor: 'rgba(41, 199, 199, 0.9)',
-          backgroundColor: 'rgba(41, 199, 199, 0.42)',
-          hoverBackgroundColor: 'rgba(77, 163, 255, 0.58)',
-          borderRadius: 8,
-        }],
+        datasets: [
+          {
+            label: 'Frequency',
+            data: [],
+            borderWidth: 1,
+            borderColor: 'rgba(41, 199, 199, 0.9)',
+            backgroundColor: 'rgba(41, 199, 199, 0.42)',
+            hoverBackgroundColor: 'rgba(77, 163, 255, 0.58)',
+            borderRadius: 8,
+            order: 2,
+          },
+          {
+            label: 'Expected (fair die)',
+            type: 'line',
+            data: [],
+            borderColor: 'rgba(255, 210, 80, 0.7)',
+            borderWidth: 2,
+            borderDash: [6, 4],
+            pointRadius: 0,
+            pointHitRadius: 0,
+            fill: false,
+            order: 1,
+          },
+        ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         animation: { duration: 180 },
         plugins: {
-          legend: { display: false },
+          legend: {
+            display: true,
+            position: 'bottom',
+            labels: {
+              color: '#9fb0c3',
+              boxWidth: 16,
+              boxHeight: 2,
+              padding: 12,
+              font: { size: 12 },
+            },
+          },
           tooltip: {
             callbacks: {
               label(context) {
                 const total = context.chart.$totalObservations || 0;
                 const count = context.parsed.y || 0;
                 const pct = total ? (count / total) * 100 : 0;
-                return ` ${count} (${pct.toFixed(1)}%)`;
+                return ` ${context.dataset.label}: ${count}${context.datasetIndex === 0 ? ` (${pct.toFixed(1)}%)` : ''}`;
               },
             },
           },
@@ -698,6 +746,9 @@
     chart.data.labels = labels;
     chart.data.datasets[0].data = data;
     chart.data.datasets[0].label = info.chartLabel;
+    // Expected frequency line: flat line at total / numberOfBuckets
+    const expectedPerFace = total / labels.length;
+    chart.data.datasets[1].data = labels.map(() => expectedPerFace);
     chart.$totalObservations = total;
     chart.update();
   }
