@@ -116,6 +116,18 @@
         </div>
         <div class="modal-body">
           <article class="help-item">
+            <h3>Fairness Score</h3>
+            <p>A percentage from 0–100% showing how close your roll distribution is to a perfectly fair die. 100% means every face appeared exactly equally. It's derived from the chi-squared statistic, normalised so it's easy to read at a glance.</p>
+            <ul>
+              <li><strong>90–100%</strong> — Excellent, very uniform</li>
+              <li><strong>75–89%</strong> — Good, fairly uniform</li>
+              <li><strong>50–74%</strong> — Fair, some deviation (normal for small samples)</li>
+              <li><strong>25–49%</strong> — Poor, clearly biased</li>
+              <li><strong>0–24%</strong> — Very poor, heavily skewed</li>
+            </ul>
+            <p>Don't read too much into a low score with fewer than 30 rolls — randomness is clumpy by nature.</p>
+          </article>
+          <article class="help-item">
             <h3>Total Rolls</h3>
             <p>How many rolls you've recorded in this session. The more rolls you have, the more reliable the stats become. Around 30+ rolls is a good minimum for meaningful chi-squared results.</p>
           </article>
