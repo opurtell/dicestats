@@ -83,6 +83,7 @@
       <section class="card stats-card" aria-labelledby="stats-heading">
         <div class="section-heading-row">
           <h2 id="stats-heading">Statistics</h2>
+          <button id="stats-help-btn" class="help-btn" type="button" aria-label="What do these stats mean?" title="What do these stats mean?">?</button>
         </div>
         <div id="stats-grid" class="stats-grid"></div>
       </section>
@@ -106,6 +107,51 @@
         <ul id="recent-rolls" class="recent-rolls" aria-live="polite"></ul>
       </section>
     </main>
+
+    <div id="stats-help-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="stats-help-title">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="stats-help-title">Understanding the Stats</h2>
+          <button id="stats-help-close" class="modal-close" type="button" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <article class="help-item">
+            <h3>Total Rolls</h3>
+            <p>How many rolls you've recorded in this session. The more rolls you have, the more reliable the stats become. Around 30+ rolls is a good minimum for meaningful chi-squared results.</p>
+          </article>
+          <article class="help-item">
+            <h3>Mean</h3>
+            <p>The average of all your roll values, calculated as the sum of all values divided by the count. For a fair D6, the expected mean is 3.5. If your mean is significantly higher or lower, one side of the die may be favoured.</p>
+          </article>
+          <article class="help-item">
+            <h3>Median</h3>
+            <p>The middle value when all your rolls are sorted from lowest to highest. Half your rolls are below this number and half are above. For a fair die, the median should be close to the mean.</p>
+          </article>
+          <article class="help-item">
+            <h3>Standard Deviation</h3>
+            <p>Measures how spread out your rolls are from the mean. A low standard deviation means rolls cluster tightly around the average; a high one means they're more spread out. For a fair D6, the expected standard deviation is about 1.71.</p>
+          </article>
+          <article class="help-item">
+            <h3>Most / Least Common</h3>
+            <p>The face value that appeared the most (or least) often in your rolls. In a small sample it's normal for these to differ — with enough rolls of a fair die, all faces should appear roughly equally.</p>
+          </article>
+          <article class="help-item">
+            <h3>Chi-Squared Test (χ²)</h3>
+            <p>A statistical test that compares your actual roll frequencies against what you'd expect from a perfectly fair die. The result is a number — <strong>lower is closer to random</strong>.</p>
+            <ul>
+              <li><strong>Looks fair</strong> — your rolls are consistent with a fair die (p-value above 0.05). No evidence of bias.</li>
+              <li><strong>Slightly biased</strong> — there's a mild indication your rolls aren't perfectly random (p-value 0.01–0.05). Could just be small sample size.</li>
+              <li><strong>Strongly biased</strong> — your rolls differ significantly from what a fair die would produce (p-value below 0.01). The die or rolling method may be biased.</li>
+            </ul>
+            <p>The "degrees of freedom" (df) is the number of face values minus one. It's used alongside the chi-squared statistic to calculate the p-value.</p>
+          </article>
+          <article class="help-item">
+            <h3>What does "random" look like?</h3>
+            <p>True randomness is clumpier than people expect. Even with a perfectly fair die, you'll see streaks, clusters, and gaps — that's normal. Don't read too much into patterns in small samples (under ~30 rolls). The chi-squared test accounts for sample size, so trust it over your intuition about whether something "looks" random.</p>
+          </article>
+        </div>
+      </div>
+    </div>
 
     <div id="live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
   </div>
