@@ -216,6 +216,11 @@ h2 { font-size: 1.02rem; }
   box-shadow: 0 0 0 1px rgba(41, 199, 199, 0.18), 0 0 0 7px rgba(41, 199, 199, 0.09);
 }
 
+.dice-btn.last-roll {
+  border-color: rgba(77, 163, 255, 0.7);
+  box-shadow: 0 0 0 1px rgba(77, 163, 255, 0.2), 0 0 0 7px rgba(77, 163, 255, 0.08);
+}
+
 .dice-btn.flash {
   animation: flash-pop 260ms ease-out;
 }
