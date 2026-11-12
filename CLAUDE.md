@@ -25,5 +25,5 @@ Listed on oscarpurtell.com: one `<tr>` in `~/claudeCode/personal/homepage/public
 
 ## GitHub Pages (legacy)
 
-The repo also served https://opurtell.github.io/dicestats/ until 12/11/2026, when the
-Cloudflare URL became canonical.
+The repo served https://opurtell.github.io/dicestats/ until 12/11/2026, when Pages was
+disabled (Oscar's call) and dicestats.oscarpurtell.com became the only live URL.
