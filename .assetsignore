@@ -1,0 +1,7 @@
+# Not part of the site — wrangler reads this from the assets directory.
+.git
+.wrangler
+PLAN.md
+wrangler.jsonc
+.gitignore
+.assetsignore
